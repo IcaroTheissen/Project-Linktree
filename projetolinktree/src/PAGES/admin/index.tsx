@@ -1,15 +1,53 @@
+import { FormEvent, useEffect, useState } from "react"
 import { Header } from "../../components/header/header"
 import { Input } from "../../components/input"
-import { FormEvent, useState } from "react"
+
 import { FiTrash } from "react-icons/fi"
-import { fb } from "../../services/firebaseConnection"
+import { db } from "../../services/firebaseConnection"
 import { addDoc, collection, onSnapshot, query, orderBy, doc, deleteDoc} from "firebase/firestore"
+import { Link } from "react-router-dom"
+
+interface LinkProps{
+    id: string;
+    name: string;
+    url: string;
+    bg: string;
+    color: string;
+}
 
 export function Admin(){
     const [nameInput, setNameInput] = useState("")
     const [urlInput, setUrlInput] = useState("")
     const [textColorInput, setTextColorInput] = useState("#f1f1f1")
     const [backgroundColorInput, setBackgroundColorInput] = useState("#121212")
+
+    const [links, setLinks] = useState<LinkProps[]>([])
+
+    useEffect (() => {
+        const linksRef = collection(db, "Links");
+        const queryRef = query(linksRef, orderBy( "created", "asc"));
+
+        const unsub = onSnapshot(queryRef, (snapshot) => {
+            let lista = [] as LinkProps[];
+
+            snapshot.forEach((doc) => {
+                lista.push({
+                    id: doc.id,
+                    name: doc.data().name,
+                    url: doc.data().url,
+                    bg: doc.data().bg,
+                    color: doc.data().color
+                })
+            });
+
+            setLinks(lista);
+
+        })
+
+        return () => {
+            unsub();
+        }
+    }, [])
 
     async function handleRegister(e: FormEvent){
         e.preventDefault();
@@ -19,7 +57,7 @@ export function Admin(){
             return;
         }
 
-        addDoc(collection(fb, "Links"), {
+        addDoc(collection(db, "Links"), {
             name:nameInput,
             url: urlInput,
             bg: backgroundColorInput,
@@ -35,6 +73,11 @@ export function Admin(){
         })
 
     }
+
+    async function handleDeletLink(id:string){
+        const docRef = doc(db, "Links", id)
+        await deleteDoc(docRef)
+    };
 
     return(
         <div className="flex items-center flex-col min-h-screen pb-7 px-2">
@@ -93,19 +136,23 @@ export function Admin(){
                 Meus Links
             </h2>
 
-            <article
-            className=" flex items-center justify-between w-11/12 max-w-xl rounded py-3 px-2 mb-2 select-none"
-            style={{backgroundColor: "#2563EB", color: "#000"}}
-            >
-                <p>asdasd</p>
-                <div>
-                    <button
-                    className="border border-dashed p-1 rounded bg-neutral-900"
-                    >
-                        <FiTrash size={18} color="#fff"/>
-                    </button>
-                </div>
-            </article>
+            {links.map( (Link) => (
+                <article
+                key={Link.id}
+                className=" flex items-center justify-between w-11/12 max-w-xl rounded py-3 px-2 mb-2 select-none"
+                style={{backgroundColor: Link.bg, color: Link.color}}
+                >
+                    <p>{Link.name}</p>
+                    <div>
+                        <button
+                        className="border border-dashed p-1 rounded bg-neutral-900"
+                        onClick={ () => handleDeletLink(Link.id) }
+                        >
+                            <FiTrash size={18} color="#fff"/>
+                        </button>
+                    </div>
+                </article>
+            ))}
 
             
         </div>
