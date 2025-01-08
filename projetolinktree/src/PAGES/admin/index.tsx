@@ -5,7 +5,6 @@ import { Input } from "../../components/input"
 import { FiTrash } from "react-icons/fi"
 import { db } from "../../services/firebaseConnection"
 import { addDoc, collection, onSnapshot, query, orderBy, doc, deleteDoc} from "firebase/firestore"
-import { Link } from "react-router-dom"
 
 interface LinkProps{
     id: string;

@@ -5,6 +5,7 @@ import { Home } from './PAGES/home'
 import { Login } from './PAGES/login'
 import { Networks } from './PAGES/networks'
 import { Private} from './privateroutes/private'
+import { ErrorPage} from './PAGES/error'
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,12 @@ const router = createBrowserRouter([
   {
     path:'/admin/social',
     element: <Private><Networks/></Private>
+  },
+  {
+    path: '*',
+    element: <ErrorPage/>
   }
+  
 ]);
 
 export { router };
